@@ -1,5 +1,9 @@
+import json
 import requests
 import yaml
+
+with open('data/qid_map.json', 'r') as f:
+    QID_MAP = json.load(f)
 
 with open("config.yml", 'r') as f:
     CONFIG = yaml.full_load(f)['leetcode']
@@ -7,11 +11,13 @@ LANG = CONFIG['global_lang']
 
 
 def logger(msg):
+    print(msg)
     with open('log.txt', 'a') as f:
         f.write(msg)
 
 
-def copy_and_submit(qid, qname):
+def copy_and_submit(fqid, qname):
+    qid = QID_MAP[fqid]
     cookies = CONFIG["cookies"]
 
     old_submission = f"https://leetcode.com/submissions/latest/?qid={qid}&lang={LANG}"
@@ -25,8 +31,7 @@ def copy_and_submit(qid, qname):
                    "x-csrftoken": cookies["csrftoken"]}
         payload = {"lang": LANG, "question_id": qid, "typed_code": solution}
         page = requests.post(new_submission, headers=headers, cookies=cookies, json=payload, timeout=60)
-        print(page.status_code, page.text)
-        result = "Success"
+        result = f"{page.status_code} {page.text}"
     elif page.status_code == 404:
         result = f"No old solution found for {qid}. {qname}"
     else:
