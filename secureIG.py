@@ -1,22 +1,27 @@
-import time
-from collections import namedtuple
-from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from securer import Securer, short_wait, long_wait, pause_pre_quit
 
-# URLs
-URL_IG = "https://www.instagram.com"
-URL_EMAILS = f"{URL_IG}/emails/settings/"
-URL_PUSH = f"{URL_IG}/push/web/settings/"
-URL_PRIVACY = f"{URL_IG}/accounts/privacy_and_security/"
+
+class Url:
+    main = "https://www.instagram.com"
+    emails = f"{main}/emails/settings/"
+    push = f"{main}/push/web/settings/"
+    privacy = f"{main}/accounts/privacy_and_security/"
+
+
+class LoginFieldId:
+    user = 'username'
+    pwd = 'password'
+    submit = 'submit'
+
 
 # Element id and xpath
-LOGIN_FIELDS_ID = namedtuple("FieldId", "user pwd submit")("username", "password", "submit")
 not_now_ = "//button[.='Not Now']"
-ig_checkbox = '//input[@type="checkbox"]'
-ig_label = '//label'
-ig_div_label = '//div[./label/input]'
+ig_checkbox_ = '//input[@type="checkbox"]'
+ig_label_ = '//label'
+ig_div_label_ = '//div[@id and ./label/input]'
+ig_toggle_ = '//label[./input[@type="checkbox"] and ./span]'
 logout_ = '//div[.="Log Out"]'
 
 PUSH_PREFS = {"likes": 0, "comments": 0, "comment_likes": 0, "like_and_comment_on_photo_user_tagged": 0,
@@ -25,49 +30,36 @@ PUSH_PREFS = {"likes": 0, "comments": 0, "comment_likes": 0, "like_and_comment_o
               "live_broadcast": 1}
 PRIVACY_PREF = {"accountPrivacy": True, "activityStatus": True, "feedPostReshareDisabled": False,
                 "usertagReviewEnabled": 1}
-PRE_QUIT_PAUSE = 5
 
 
-class SecureIG:
-    def __init__(self, user, pwd):
-        chrome_options = webdriver.ChromeOptions()
-        chrome_options.add_argument("--disable-notifications")
-        self.driver = webdriver.Chrome(options=chrome_options)
-        self.wait = WebDriverWait(self.driver, 10)
-        self.username = user
-        self.password = pwd
-
-    def wait_and_click(self, xpath):
-        try:
-            elem = self.wait.until(EC.visibility_of_element_located((By.XPATH, xpath)))
-            elem.click()
-        except TimeoutError:
-            print(f'{xpath} click failed due to timeout')
+class SecureIG(Securer):
+    def __init__(self):
+        super().__init__('instagram')
 
     def select_by_name(self, name, option):
         elem = self.driver.find_elements(By.NAME, name)
         elem[option].click()
 
     def connect(self):
-        self.driver.get(URL_IG)
-        self.wait_and_click(f'//input[@name="{LOGIN_FIELDS_ID.user}"]')
-        self.driver.find_element(By.NAME, LOGIN_FIELDS_ID.user).send_keys(self.username)
-        self.driver.find_element(By.NAME, LOGIN_FIELDS_ID.pwd).send_keys(self.password)
-        self.driver.find_element(By.XPATH, f'//button[@type="{LOGIN_FIELDS_ID.submit}"]').click()
+        self.driver.get(Url.main)
+        self.wait_and_click(f'//input[@name="{LoginFieldId.user}"]')
+        self.driver.find_element(By.NAME, LoginFieldId.user).send_keys(self.username)
+        self.driver.find_element(By.NAME, LoginFieldId.pwd).send_keys(self.password)
+        self.driver.find_element(By.XPATH, f'//button[@type="{LoginFieldId.submit}"]').click()
         self.wait_and_click(not_now_)
 
     def close(self):
         account_ = f'//span/img[contains(@alt, "{self.username}")]'
-        time.sleep(PRE_QUIT_PAUSE)
+        pause_pre_quit()
         self.wait_and_click(account_)
         self.wait_and_click(logout_)
-        self.driver.quit()
+        self.cleanup()
 
     def secure_emails(self):
-        self.driver.get(URL_EMAILS)
-        wait_for_loading()
-        labels = self.driver.find_elements(By.XPATH, ig_label)
-        checkboxes = self.driver.find_elements(By.XPATH, ig_checkbox)
+        self.driver.get(Url.emails)
+        long_wait()
+        labels = self.driver.find_elements(By.XPATH, ig_label_)
+        checkboxes = self.driver.find_elements(By.XPATH, ig_checkbox_)
         assert len(labels) == len(checkboxes)
         self.wait.until(EC.element_to_be_clickable(labels[0]))
         for label, checkbox in zip(labels, checkboxes):
@@ -75,34 +67,41 @@ class SecureIG:
                 label.click()
 
     def secure_push(self):
-        self.driver.get(URL_PUSH)
-        wait_for_loading()
+        self.driver.get(Url.push)
+        long_wait()
         for name, pref in PUSH_PREFS.items():
             self.select_by_name(name, pref)
 
     def secure_privacy(self):
-        self.driver.get(URL_PRIVACY)
-        wait_for_loading()
-        divs = self.driver.find_elements(By.XPATH, ig_div_label)
+        self.driver.get(Url.privacy)
+        long_wait()
+        divs = self.driver.find_elements(By.XPATH, ig_div_label_)
         for div in divs:
             elem = div.find_element(By.TAG_NAME, 'input')
             if elem.is_selected() != PRIVACY_PREF[div.get_attribute("id")]:
                 div.click()
-                time.sleep(2)
+                short_wait()
         review = "usertagReviewEnabled"
         self.select_by_name(review, PRIVACY_PREF[review])
+        short_wait()
+        labels = self.driver.find_elements(By.XPATH, ig_toggle_)
+        for label in labels:
+            elem = label.find_element(By.TAG_NAME, 'input')
+            if elem.is_selected():
+                label.click()
+                short_wait()
 
     def secure_all(self):
         steps = [self.connect, self.secure_emails, self.secure_push, self.secure_privacy, self.close]
         for step in steps:
             step()
+            short_wait()
 
 
-def wait_for_loading(): time.sleep(5)
+def main():
+    my_ig = SecureIG()
+    my_ig.secure_all()
 
 
 if __name__ == '__main__':
-    username = input("Enter your IG username : ")
-    password = input("Enter your password : ")
-    my_ig = SecureIG(username, password)
-    my_ig.secure_all()
+    main()

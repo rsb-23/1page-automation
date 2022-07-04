@@ -1,0 +1,18 @@
+facebook:
+  user:
+  pwd:
+gmail:
+  user:
+  pwd:
+instagram:
+  user:
+  pwd:
+linkedin:
+  user:
+  pwd:
+leetcode:
+  cookies:
+    LEETCODE_SESSION: abc.abc.dfvhbdjfv....
+    csrftoken: abc
+    messages: abc$[["__json_message",0,24,"Successfully signed in as user."]]
+  global_lang: python3

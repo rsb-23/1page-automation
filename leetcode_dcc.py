@@ -1,9 +1,9 @@
-""" leet_dcc.py:
+""" leetcode_dcc.py:
 To re-submit old solution for LeetCode Daily Coding Challenges
 
 Settings-
-1. Check the availability of data/qid_map.json and config.yml
-2. Add cookies value in config.yml
+1. Check the availability of data/qid_map.json and cred.yml
+2. Add cookies value in cred.yml
 3. Update LEETCODE_SESSION value, in case of failure.
 
 Suggestion - Use Task Scheduler/ Cron Job to run this script daily
@@ -16,14 +16,14 @@ import yaml
 with open('data/qid_map.json', 'r') as f:
     QID_MAP = json.load(f)
 
-with open("config.yml", 'r') as f:
+with open("cred.yml", 'r') as f:
     CONFIG = yaml.full_load(f)['leetcode']
 LANG = CONFIG['global_lang']
 
 
 def logger(msg):
     print(msg)
-    with open('log.txt', 'a') as f:
+    with open('leet_dcc.log', 'a') as f:
         f.write(msg)
 
 
@@ -46,7 +46,7 @@ def copy_and_submit(fqid, qname):
     elif page.status_code == 404:
         result = f"No old solution found for {qid}. {qname}"
     else:
-        result = f"{page.status_code} - Try changing LEETCODE_SESSION value from cookies"
+        result = f"{page.status_code} - Try changing LEETCODE_SESSION value using cookies"
     logger(result + '\n')
 
 
