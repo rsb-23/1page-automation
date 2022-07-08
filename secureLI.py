@@ -26,6 +26,7 @@ class Xpath:
     checked_box = '//div[@class="checkbox-input" and input[@checked]]/label/p'
     checked_switch = '//div[@class="toggle-input" and input[@checked]]/label/p'
     profile = '//a[@href and @class="ember-view block"]'
+    public_visibility = '//div[input[@id="toggle-visibilityLevel" and @checked]]/label/span[1]'
     unchecked = '//input[not(@checked)]'
 
 
@@ -43,7 +44,7 @@ class SecureLI(Securer):
 
     def check_about(self):
         self.driver.find_element(By.XPATH, Xpath.profile).click()
-        long_wait(5)
+        long_wait()
         summary = self.driver.find_element(By.XPATH, Xpath.about).text
         print(summary)
         if re.search(r'\d{10}', summary) is not None:
@@ -68,11 +69,19 @@ class SecureLI(Securer):
 
         self.driver.get(Url.public_profile)
         short_wait()
+        public_profile = self.driver.find_elements(By.XPATH, Xpath.public_visibility)
+        if not public_profile:
+            self.log("Your profile is private to LinkedIn")
+            return 0
+
         checked_fields = (x.get_attribute("id") for x in self.driver.find_elements(By.XPATH, Xpath.checked))
         unchecked_fields = (x.get_attribute("id") for x in self.driver.find_elements(By.XPATH, Xpath.unchecked))
 
-        self.log(f"Visible in timeline : {filter_fields(checked_fields, checked=True)}")
+        self.log(f"OLD:\nVisible in timeline : {filter_fields(checked_fields, checked=True)}")
         self.log(f"Not Visible in timeline : {filter_fields(unchecked_fields, checked=False)}")
+
+        public_profile[0].click()
+        self.log("NEW:\nYour profile is set to private")
 
     def ads(self):
         def uncheck(xpath):
