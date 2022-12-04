@@ -8,63 +8,61 @@ Settings-
 
 Suggestion - Use Task Scheduler/ Cron Job to run this script daily
 """
-
-import json
 import requests
-import yaml
 
-with open('data/qid_map.json', 'r') as f:
-    QID_MAP = json.load(f)
+from config import CONFIG, Logger
 
-with open("cred.yml", 'r') as f:
-    CONFIG = yaml.full_load(f)['leetcode']
-LANG = CONFIG['global_lang']
+CONFIG = CONFIG["leetcode"]
+logger = Logger("leet_dcc")
 
 
-def logger(msg):
-    print(msg)
-    with open('leet_dcc.log', 'a') as f:
-        f.write(msg)
-
-
-def copy_and_submit(fqid, qname):
+def copy_and_submit(qid, title_slug):
     cookies = CONFIG["cookies"]
-    qid = QID_MAP[fqid]
+    lang = CONFIG["global_lang"]
 
-    old_submission = f"https://leetcode.com/submissions/latest/?qid={qid}&lang={LANG}"
+    old_submission = f"https://leetcode.com/submissions/latest/?qid={qid}&lang={lang}"
     page = requests.get(old_submission, cookies=cookies)
 
     if page.status_code == 200:
         solution = page.json()["code"]
 
-        new_submission = f"https://leetcode.com/problems/{qname}/submit/"
-        headers = {"referer": f"https://leetcode.com/problems/{qname}/submissions/",
-                   "x-csrftoken": cookies["csrftoken"]}
-        payload = {"lang": LANG, "question_id": qid, "typed_code": solution}
-        page = requests.post(new_submission, headers=headers, cookies=cookies, json=payload, timeout=60)
-        result = f"{page.status_code} {page.text}"
-    elif page.status_code == 404:
-        result = f"No old solution found for {qid}. {qname}"
-    else:
-        result = f"{page.status_code} - Try changing LEETCODE_SESSION value using cookies"
-    logger(result + '\n')
+        new_submission = f"https://leetcode.com/problems/{title_slug}/submit/"
+        headers = {
+            "referer": f"https://leetcode.com/problems/{title_slug}/submissions/",
+            "x-csrftoken": cookies["csrftoken"],
+        }
+        payload = {"lang": lang, "question_id": qid, "typed_code": solution}
+        page = requests.post(
+            new_submission, headers=headers, cookies=cookies, json=payload, timeout=60
+        )
+
+    return page.status_code, page.text
 
 
-def get_question():
+def get_active_question():
     url_query = "https://leetcode.com/graphql/"
-    payload = {"query": "\n    query questionOfToday {\n  activeDailyCodingChallengeQuestion {\n    date\n    "
-                        "link\n    question {\n      frontendQuestionId: questionFrontendId\n      "
-                        "title\n      titleSlug\n      "
-                        "\n    }\n  }\n}\n    ",
-               "variables": {}}
+    payload = {
+        "query": "\n query questionOfToday {\n activeDailyCodingChallengeQuestion {\n date\n question "
+        "{\n frontendQuestionId: questionFrontendId\n questionId\n titleSlug\n difficulty\n \n }\n }\n}\n",
+        "variables": {},
+    }
 
     page = requests.post(url_query, json=payload)
     result = page.json()["data"]["activeDailyCodingChallengeQuestion"]
-    logger(f"{result['date']} : ")
+    logger.log(f"{result['date']} : ")
     question = result["question"]
-    return question["frontendQuestionId"], question["titleSlug"]
+
+    return question.values()  # order as in payload["query"]
 
 
-if __name__ == '__main__':
-    question_id, question_title = get_question()
-    copy_and_submit(question_id, question_title)
+if __name__ == "__main__":
+    display_qid, qid, title_slug, question_difficulty = get_active_question()
+    status_code, response_text = copy_and_submit(qid, title_slug)
+
+    if status_code == 200:
+        result = f"{status_code} {response_text}"
+    elif status_code == 404:
+        result = f"No old solution found for {qid=}. [{display_qid}: {title_slug}]"
+    else:
+        result = f"{status_code} - Try changing LEETCODE_SESSION value using cookies"
+    logger.log(f"{result} ({question_difficulty}) \n")
