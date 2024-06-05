@@ -8,6 +8,7 @@ Info -
 Suggestion - Use Task Scheduler/ Cron Job to run this script daily
 """
 from datetime import datetime
+from time import sleep
 
 import requests
 
@@ -70,6 +71,22 @@ def get_solution(qid, slug) -> str | None:
     return official_solution(slug)
 
 
+def is_submission_accepted(sub_id: int) -> bool:
+    def check():
+        _check = s.get(f"{BASE_URL}/submissions/detail/{sub_id}/check/")
+        logger.log(f"{_check} {_check.content}")
+        return _check.json()
+
+    resp = {"state": ""}
+    while resp["state"] != "SUCCESS":
+        sleep(0.5)
+        resp = check()
+
+    status_msg = resp["status_msg"]
+    logger.log(f"{status_msg=}")
+    return status_msg == "Accepted"
+
+
 def submit_solution(qid, title_slug, solution):
     _title_url = f"{BASE_URL}/problems/{title_slug}"
 
@@ -77,11 +94,13 @@ def submit_solution(qid, title_slug, solution):
     payload = {"lang": lang, "question_id": qid, "typed_code": solution}
     page = s.post(f"{_title_url}/submit/", headers=headers, json=payload, timeout=60)
 
-    if page.status_code == 200:
-        msg = f">SOLVED< {page.text}"
-    else:
-        msg = f"{page.status_code} - Try changing LEETCODE_SESSION value using cookies"
-    return msg
+    if page.status_code != 200:
+        return f"{page.status_code} - Try changing LEETCODE_SESSION value using cookies"
+    return (
+        f">SOLVED< {page.text}"
+        if is_submission_accepted(sub_id=page.json()["submission_id"])
+        else "Wrong Submission, solve manually."
+    )
 
 
 if __name__ == "__main__":
