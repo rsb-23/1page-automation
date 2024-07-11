@@ -7,18 +7,20 @@ Info -
 
 Suggestion - Use Task Scheduler/ Cron Job to run this script daily
 """
+
 from datetime import datetime
 from time import sleep
 
 import requests
 
-from config import CONFIG, Logger
+from config import COMMON_HEADERS, CONFIG, Logger
 
-CONFIG = CONFIG["leetcode"]
+LEET_CONFIG = CONFIG["leetcode"]
 logger = Logger("leet_dcc")
 
 BASE_URL = "https://leetcode.com"
 QUERY_URL = f"{BASE_URL}/graphql"
+INVALID_SESSION_COOKIE = "Update LEETCODE_SESSION cookie"
 
 
 class Question:
@@ -37,7 +39,7 @@ class Question:
 def get_dcc_question():
     payload = {
         "query": "query questionOfToday {activeDailyCodingChallengeQuestion{date question "
-        "{questionFrontendId questionId titleSlug difficulty} }}",
+        "{questionFrontendId questionId titleSlug difficulty} }}"
     }
     json_data = s.post(QUERY_URL, json=payload).json()["data"]
     q = Question(**json_data["activeDailyCodingChallengeQuestion"])
@@ -52,19 +54,22 @@ def official_solution(slug):
         "variables": {"titleSlug": slug},
     }
     editorial = s.post(QUERY_URL, json=editorial_payload)
+    if "playground" not in editorial.text:
+        return None
     solution_uuid = editorial.text.split("playground/")[-1][:8]
 
     solution_payload = {
         "query": f'query fetchPlayground {{allPlaygroundCodes(uuid: "{solution_uuid}") {{code langSlug}} }}'
     }
     solution = s.post(QUERY_URL, json=solution_payload).json()["data"]
-    return [*filter(lambda x: x["langSlug"] == "python3", solution["allPlaygroundCodes"])][0]["code"]
+    py_solutions = [*filter(lambda x: x["langSlug"] == "python3", solution["allPlaygroundCodes"])]
+    return py_solutions[-1]["code"] if py_solutions else None
 
 
 def get_solution(qid, slug) -> str | None:
     submission = s.get(f"{BASE_URL}/submissions/latest/?qid={qid}&lang={lang}")
     if submission.status_code == 401:
-        raise ValueError("Update LEETCODE_SESSION cookie")
+        raise ValueError(INVALID_SESSION_COOKIE)
     if submission.status_code == 200:
         return submission.json()["code"]
 
@@ -90,12 +95,19 @@ def is_submission_accepted(sub_id: int) -> bool:
 def submit_solution(qid, title_slug, solution):
     _title_url = f"{BASE_URL}/problems/{title_slug}"
 
-    headers = {"referer": f"{_title_url}/submissions/", "x-csrftoken": cookies["csrftoken"]}
+    s.headers.update(
+        {
+            "referer": f"{_title_url}/submissions/",
+            "x-csrftoken": s.cookies["csrftoken"],
+            "X-Newrelic-Id": cookies["newrelic_id"],
+            **COMMON_HEADERS,
+        }
+    )
     payload = {"lang": lang, "question_id": qid, "typed_code": solution}
-    page = s.post(f"{_title_url}/submit/", headers=headers, json=payload, timeout=60)
+    page = s.post(f"{_title_url}/submit/", json=payload, timeout=60)
 
     if page.status_code != 200:
-        return f"{page.status_code} - Try changing LEETCODE_SESSION value using cookies"
+        return f"{page.status_code} - {INVALID_SESSION_COOKIE}"
     return (
         f">SOLVED< {page.text}"
         if is_submission_accepted(sub_id=page.json()["submission_id"])
@@ -104,7 +116,7 @@ def submit_solution(qid, title_slug, solution):
 
 
 if __name__ == "__main__":
-    cookies, lang = CONFIG["cookies"], CONFIG["global_lang"]
+    cookies, lang = LEET_CONFIG["cookies"], LEET_CONFIG["global_lang"]
 
     with requests.Session() as s:
         for k, v in cookies.items():
@@ -117,3 +129,4 @@ if __name__ == "__main__":
         result = f">SOLUTION_NOT_FOUND< {que_id=}"
 
     logger.log(result + "\n")
+    s.close()  # Closing session explicitly

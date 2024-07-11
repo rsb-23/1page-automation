@@ -1,5 +1,6 @@
 from selenium.webdriver.common.by import By
-from securer import Securer, short_wait, pause_pre_quit
+
+from securer import Securer, pause_pre_quit, short_wait
 
 
 class Url:
@@ -11,9 +12,9 @@ class Url:
 
 
 class LoginFieldId:
-    user = 'email'
-    pwd = 'pass'
-    submit = 'login'
+    user = "email"
+    pwd = "pass"
+    submit = "login"
 
 
 # Element id and xpath
@@ -30,7 +31,7 @@ link_btn_map = {"ad": ((Url.ADVERTISERS, btn_hide), (Url.AD_TOPICS, btn_fewer))}
 
 class SecureFB(Securer):
     def __init__(self):
-        super().__init__('facebook')
+        super().__init__("facebook")
 
     def connect(self):
         self.login(Url.main, LoginFieldId.user, LoginFieldId.pwd)
@@ -84,5 +85,5 @@ def main():
     my_fb.secure_all()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

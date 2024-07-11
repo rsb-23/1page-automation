@@ -1,6 +1,5 @@
-
-cred-personal.yml
-emails.py
+.idea/
 *.log
 *.bak
-.idea/
+*.yml
+emails.py

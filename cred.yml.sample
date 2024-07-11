@@ -1,3 +1,4 @@
+driver_path: D:\path\to\chromedriver.exe
 facebook:
   user:
   pwd:
@@ -13,6 +14,6 @@ linkedin:
 leetcode:
   cookies:
     LEETCODE_SESSION: abc.abc.dfvhbdjfv....
-    csrftoken: abc
     messages: abc$[["__json_message",0,24,"Successfully signed in as user."]]
+    newrelic_id: XXXXXXVRGwIAUVhbAXXXXlQ=
   global_lang: python3

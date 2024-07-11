@@ -1,33 +1,47 @@
 import re
+
 from selenium.webdriver.common.by import By
-from securer import Securer, short_wait, long_wait, pause_pre_quit
+
+from securer import Securer, long_wait, pause_pre_quit, short_wait
 
 
 class Url:
     main = "https://www.linkedin.com"
     ad_base_url = "https://www.linkedin.com/psettings/advertising"
-    ad_types = ["profile-data", "li-enterprise-product", "connections", "location", "demographics",
-                "companies-followed",
-                "groups-joined", "education", "job-information", "employer",
-                "websites-visited", "ads-beyond-linkedin", "actions-that-showed-interest", "actions-after-viewing-ads"]
+    ad_types = [
+        "profile-data",
+        "li-enterprise-product",
+        "connections",
+        "location",
+        "demographics",
+        "companies-followed",
+        "groups-joined",
+        "education",
+        "job-information",
+        "employer",
+        "websites-visited",
+        "ads-beyond-linkedin",
+        "actions-that-showed-interest",
+        "actions-after-viewing-ads",
+    ]
     public_profile = "https://www.linkedin.com/public-profile/settings"  # Record setting
     settings = "https://www.linkedin.com/psettings"
 
 
 class LoginFieldId:
-    user = 'session_key'
-    pwd = 'session_password'
+    user = "session_key"
+    pwd = "session_password"
     submit = '//button[@type="submit"]'
 
 
 class Xpath:
     about = '//section[div[@id="about"]]/div[3]/div/div/div/span[1]'
-    checked = '//input[@checked]'
+    checked = "//input[@checked]"
     checked_box = '//div[@class="checkbox-input" and input[@checked]]/label/p'
     checked_switch = '//div[@class="toggle-input" and input[@checked]]/label/p'
     profile = '//a[@href and @class="ember-view block"]'
     public_visibility = '//div[input[@id="toggle-visibilityLevel" and @checked]]/label/span[1]'
-    unchecked = '//input[not(@checked)]'
+    unchecked = "//input[not(@checked)]"
 
 
 class SecureLI(Securer):
@@ -47,23 +61,28 @@ class SecureLI(Securer):
         long_wait()
         summary = self.driver.find_element(By.XPATH, Xpath.about).text
         print(summary)
-        if re.search(r'\d{10}', summary) is not None:
+        if re.search(r"\d{10}", summary) is not None:
             self.log("About/Summary contains your mobile number")
 
     def public_profile(self):
-        id_map = {"currentPositions": "currentPositionsDetails", "currentPositionsDetails": "currentPositions",
-                  "pastPositions": "pastPositionsDetails", "pastPositionsDetails": "pastPositions",
-                  "educations": "educationsDetails", "educationsDetails": "educations"}
+        id_map = {
+            "currentPositions": "currentPositionsDetails",
+            "currentPositionsDetails": "currentPositions",
+            "pastPositions": "pastPositionsDetails",
+            "pastPositionsDetails": "pastPositions",
+            "educations": "educationsDetails",
+            "educationsDetails": "educations",
+        }
 
         def filter_fields(field_list, checked=True):
             filtered_fields = []
             for field in field_list:
-                if '--' in field:
-                    field = field.split('--')[1]
+                if "--" in field:
+                    field = field.split("--")[1]
                     field = id_map.get(field, field)
                     filtered_fields.append(field)
                 elif field.endswith("pictureVisibilityLevel") and checked:
-                    field = field.split('-')[0]
+                    field = field.split("-")[0]
                     self.log(f"Picture visibility level is {field}")
             return filtered_fields
 
@@ -112,5 +131,5 @@ def main():
         my_linkedin.cleanup()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

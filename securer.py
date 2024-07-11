@@ -1,12 +1,14 @@
-from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-
 from functools import partial
 from time import sleep
-import yaml
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.service import Service
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
+from config import CONFIG
 
 short_wait = partial(sleep, 2)
 long_wait = partial(sleep, 5)
@@ -14,9 +16,8 @@ pause_pre_quit = partial(sleep, 5)
 
 
 def fetch_creds(social_media):
-    with open("cred.yml", 'r') as f:
-        Creds = yaml.full_load(f)[social_media]
-    return Creds['user'], Creds['pwd']
+    cred = CONFIG[social_media]
+    return cred["user"], cred["pwd"]
 
 
 class Securer:
@@ -26,9 +27,9 @@ class Securer:
         chrome_options.add_argument("--disable-notifications")
 
         chrome_options.binary_location = r"C:\Program Files\Google\Chrome Beta\Application\chrome.exe"
-        driver_path = r"D:\path\to\chromedriver.exe"
+        chrome_service = Service(CONFIG["driver_path"])
 
-        self.driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=driver_path)
+        self.driver = webdriver.Chrome(options=chrome_options, service=chrome_service)
         self.wait = WebDriverWait(self.driver, 10)
         self.username, self.password = fetch_creds(social_media)
         self.logger = open(f"{social_media}_settings.log", "w")
@@ -39,13 +40,13 @@ class Securer:
             if click:
                 elem.click()
         except TimeoutError:
-            print(f'{xpath} click failed due to timeout')
+            print(f"{xpath} click failed due to timeout")
 
     def wait_for_frame(self, frame_id):
         self.wait.until(EC.frame_to_be_available_and_switch_to_it(frame_id))
 
     def log(self, txt):
-        self.logger.write(txt+'\n')
+        self.logger.write(txt + "\n")
 
     def cleanup(self):
         self.logger.close()

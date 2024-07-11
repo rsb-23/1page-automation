@@ -3,12 +3,18 @@ import os
 
 import yaml
 
-with open("cred-personal.yml", "r") as f:
+with open("cred1.yml", "r") as f:
     CONFIG = yaml.full_load(f)
 with open("data/qid_map.json", "r") as f:
     QID_MAP = json.load(f)
 with open("data/leet_problems.json", "r") as f:
     QUESTION_BANK = json.load(f)
+
+COMMON_HEADERS = {
+    "Content-Type": "application/json",
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/603.3.8 (KHTML, like Gecko) "
+    "Version/10.1.2Safari/603.3.8",
+}
 
 
 class Logger:
@@ -22,10 +28,10 @@ class Logger:
         if not os.path.exists(self.log_folder):
             os.mkdir(self.log_folder)
         if not os.path.exists(self._path):
-            with open(self._path, "w") as f:
-                f.write("==Logs==\n")
+            with open(self._path, "w") as log_head:
+                log_head.write("==Logs==\n")
 
     def log(self, msg):
         print(msg)
-        with open(self._path, "a") as f:
-            f.write(msg)
+        with open(self._path, "a") as logger:
+            logger.write(msg)
