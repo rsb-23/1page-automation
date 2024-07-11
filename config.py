@@ -3,7 +3,7 @@ import os
 
 import yaml
 
-with open("cred1.yml", "r") as f:
+with open("cred.yml", "r") as f:
     CONFIG = yaml.full_load(f)
 with open("data/qid_map.json", "r") as f:
     QID_MAP = json.load(f)
