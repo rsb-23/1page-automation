@@ -1,6 +1,7 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from securer import Securer, short_wait, long_wait, pause_pre_quit
+
+from securer import Securer, long_wait, pause_pre_quit, short_wait
 
 
 class Url:
@@ -11,30 +12,44 @@ class Url:
 
 
 class LoginFieldId:
-    user = 'username'
-    pwd = 'password'
-    submit = 'submit'
+    user = "username"
+    pwd = "password"
+    submit = "submit"
 
 
 # Element id and xpath
 not_now_ = "//button[.='Not Now']"
 ig_checkbox_ = '//input[@type="checkbox"]'
-ig_label_ = '//label'
-ig_div_label_ = '//div[@id and ./label/input]'
+ig_label_ = "//label"
+ig_div_label_ = "//div[@id and ./label/input]"
 ig_toggle_ = '//label[./input[@type="checkbox"] and ./span]'
 logout_ = '//div[.="Log Out"]'
 
-PUSH_PREFS = {"likes": 0, "comments": 0, "comment_likes": 0, "like_and_comment_on_photo_user_tagged": 0,
-              "follow_request_accepted": 0, "pending_direct_share": 0, "direct_share_activity": 1,
-              "notification_reminders": 1, "first_post": 0, "view_count": 0, "report_updated": 1,
-              "live_broadcast": 1}
-PRIVACY_PREF = {"accountPrivacy": True, "activityStatus": True, "feedPostReshareDisabled": False,
-                "usertagReviewEnabled": 1}
+PUSH_PREFS = {
+    "likes": 0,
+    "comments": 0,
+    "comment_likes": 0,
+    "like_and_comment_on_photo_user_tagged": 0,
+    "follow_request_accepted": 0,
+    "pending_direct_share": 0,
+    "direct_share_activity": 1,
+    "notification_reminders": 1,
+    "first_post": 0,
+    "view_count": 0,
+    "report_updated": 1,
+    "live_broadcast": 1,
+}
+PRIVACY_PREF = {
+    "accountPrivacy": True,
+    "activityStatus": True,
+    "feedPostReshareDisabled": False,
+    "usertagReviewEnabled": 1,
+}
 
 
 class SecureIG(Securer):
     def __init__(self):
-        super().__init__('instagram')
+        super().__init__("instagram")
 
     def select_by_name(self, name, option):
         elem = self.driver.find_elements(By.NAME, name)
@@ -77,7 +92,7 @@ class SecureIG(Securer):
         long_wait()
         divs = self.driver.find_elements(By.XPATH, ig_div_label_)
         for div in divs:
-            elem = div.find_element(By.TAG_NAME, 'input')
+            elem = div.find_element(By.TAG_NAME, "input")
             if elem.is_selected() != PRIVACY_PREF[div.get_attribute("id")]:
                 div.click()
                 short_wait()
@@ -86,7 +101,7 @@ class SecureIG(Securer):
         short_wait()
         labels = self.driver.find_elements(By.XPATH, ig_toggle_)
         for label in labels:
-            elem = label.find_element(By.TAG_NAME, 'input')
+            elem = label.find_element(By.TAG_NAME, "input")
             if elem.is_selected():
                 label.click()
                 short_wait()
@@ -103,5 +118,5 @@ def main():
     my_ig.secure_all()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
