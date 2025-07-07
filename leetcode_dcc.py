@@ -1,4 +1,4 @@
-""" leetcode_dcc.py:
+"""leetcode_dcc.py:
 To re-submit old solution for LeetCode Daily Coding Challenges
 
 Info -

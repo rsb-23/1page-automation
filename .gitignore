@@ -1,5 +1,10 @@
 .idea/
+.vscode/
+__pycache__/
 *.log
 *.bak
+
+.env
+
 cred*.yml
 emails.py

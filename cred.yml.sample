@@ -1,3 +1,4 @@
+browser_path: C:\path\to\brave.exe
 driver_path: D:\path\to\chromedriver.exe
 facebook:
   user:

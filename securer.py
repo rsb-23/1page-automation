@@ -2,14 +2,16 @@ from functools import partial
 from time import sleep
 
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.service import Service
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 
 from config import CONFIG
 
+EC = expected_conditions
 short_wait = partial(sleep, 2)
 long_wait = partial(sleep, 5)
 pause_pre_quit = partial(sleep, 5)
@@ -22,12 +24,13 @@ def fetch_creds(social_media):
 
 class Securer:
     def __init__(self, social_media):
-        chrome_options = webdriver.ChromeOptions()
+        chrome_options = Options()
         chrome_options.add_argument("start-maximized")
         chrome_options.add_argument("--disable-notifications")
+        chrome_options.add_argument("--incognito")
 
-        chrome_options.binary_location = r"C:\Program Files\Google\Chrome Beta\Application\chrome.exe"
-        chrome_service = Service(CONFIG["driver_path"])
+        chrome_options.binary_location = CONFIG["browser_path"]
+        chrome_service = Service()
 
         self.driver = webdriver.Chrome(options=chrome_options, service=chrome_service)
         self.wait = WebDriverWait(self.driver, 10)
@@ -47,11 +50,12 @@ class Securer:
 
     def log(self, txt):
         self.logger.write(txt + "\n")
+        print(txt)
 
     def cleanup(self):
-        self.logger.close()
         self.driver.quit()
-        print("Logged Out Successfully")
+        self.log("Logged Out Successfully")
+        self.logger.close()
 
     def login(self, url, user_id, pwd_id):
         self.driver.get(url)

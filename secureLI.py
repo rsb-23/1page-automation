@@ -101,6 +101,7 @@ class SecureLI(Securer):
 
         public_profile[0].click()
         self.log("NEW:\nYour profile is set to private")
+        return None
 
     def ads(self):
         def uncheck(xpath):

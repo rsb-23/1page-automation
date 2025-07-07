@@ -1,7 +1,9 @@
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support import expected_conditions
 
 from securer import Securer, long_wait, pause_pre_quit, short_wait
+
+EC = expected_conditions
 
 
 class Url:
