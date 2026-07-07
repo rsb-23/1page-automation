@@ -69,7 +69,6 @@ class SecureFB(Securer):
                 for i in range(6, len(buttons), 7):
                     buttons[i].click()
                 self.driver.refresh()
-            return None
 
         for ad_link, btn_txt in link_btn_map["ad"]:
             uncheck(link=ad_link, btn_text=btn_txt)

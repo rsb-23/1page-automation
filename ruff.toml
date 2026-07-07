@@ -1,0 +1,21 @@
+include = ["pyproject.toml", "src/**/*.py", "*.py"]
+line-length = 120
+output-format = "concise"
+target-version = "py312"
+
+[format]
+docstring-code-line-length = 100
+skip-magic-trailing-comma = true
+
+[lint]
+select = ["F", "E", "W", "B", "I", "PL", "RUF005", "RUF010"]
+ignore = ["E203", "E501", "B905", "PLR2004", "PLW1641", "PLW2901"]
+
+[lint.per-file-ignores]
+"*/__init__.py" = ["F401"]
+"base.py" = ["PLW2901"]
+"icalendar.py" = ["PLR0912", "PLR0915"]
+
+[lint.isort]
+split-on-trailing-comma = false
+combine-as-imports = false
