@@ -22,5 +22,5 @@ Technology Used : Python and Selenium
 3. Setup a python virtual environment and run  
    `pip install -r requirements.txt`
 4. Update binary location (line-29) and driver-path (line-30) of securer.py
-5. Add your accounts' username and passwords in `cred.yml` file.
+5. Add your accounts' username and passwords in `cred.toml` file.
 6. Run the script.

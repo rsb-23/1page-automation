@@ -9,7 +9,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 
-from config import CONFIG
+from src.core import CREDS
 
 EC = expected_conditions
 short_wait = partial(sleep, 2)
@@ -18,7 +18,7 @@ pause_pre_quit = partial(sleep, 5)
 
 
 def fetch_creds(social_media):
-    cred = CONFIG[social_media]
+    cred = CREDS[social_media]
     return cred["user"], cred["pwd"]
 
 
@@ -29,7 +29,7 @@ class Securer:
         chrome_options.add_argument("--disable-notifications")
         chrome_options.add_argument("--incognito")
 
-        chrome_options.binary_location = CONFIG["browser_path"]
+        chrome_options.binary_location = CREDS["browser_path"]
         chrome_service = Service()
 
         self.driver = webdriver.Chrome(options=chrome_options, service=chrome_service)

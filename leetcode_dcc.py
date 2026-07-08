@@ -2,7 +2,7 @@
 To re-submit old solution for LeetCode Daily Coding Challenges
 
 Info -
-1. Store cookies value in cred.yml
+1. Store cookies value in cred.toml
 2. Update LEETCODE_SESSION value, in case of failure.
 
 Suggestion - Use Task Scheduler/ Cron Job to run this script daily
@@ -13,9 +13,9 @@ from time import sleep
 
 import requests
 
-from config import COMMON_HEADERS, CONFIG, Logger
+from src.core import COMMON_HEADERS, CREDS, Logger
 
-LEET_CONFIG = CONFIG["leetcode"]
+LEET_CONFIG = CREDS["leetcode"]
 logger = Logger("leet_dcc")
 
 BASE_URL = "https://leetcode.com"

@@ -1,0 +1,21 @@
+browser_path = "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe"
+driver_path = "D:\\Projects\\STATICS\\driver\\chromedriver.exe"
+
+[gmail]
+user = ""
+pwd = ""
+
+[instagram]
+user = ""
+pwd = ""
+
+[leetcode]
+global_lang = "python3"
+
+[leetcode.cookies]
+LEETCODE_SESSION = "abc.abc.dfvhbdjfv...."
+messages = """abc$[["__json_message",0,24,"Successfully signed in as user."]]"""
+newrelic_id = "XXXXXXVRGwIAUVhbAXXXXlQ="
+
+[linkedin]
+li_at = ""
