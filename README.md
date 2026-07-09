@@ -10,9 +10,9 @@ Technology Used : Python and Selenium
 1. leetcode_dcc.py - To retrieve old submission of LeetCode Daily Coding Challenge and resubmit.
 
 2. To optimize privacy settings of your Social Media accounts.
-   - [Facebook](secureFB.py)
-   - [Instagram](secureIG.py)
-   - [LinkedIn](secureLI.py)
+   - [Facebook](src/secureFB.py)
+   - [Instagram](src/secureIG.py)
+   - [LinkedIn](src/secureLI.py)
 
 ## Setup
 

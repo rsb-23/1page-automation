@@ -7,5 +7,5 @@ __pycache__/
 .env
 
 cred*.yml
-cred.toml
-emails.py
+data/cred.toml
+src/emails.py

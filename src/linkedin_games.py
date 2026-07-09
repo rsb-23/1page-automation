@@ -57,8 +57,9 @@ def get_target_frame(page, keyword: str):
 
 def check_completion(frame, wait_ms: int = 2500) -> bool:
     """True if a 'See Result' span appears within wait_ms, else False."""
+    css = "div.pr-top__headline, span:text-is('See results')"
     try:
-        frame.wait_for_selector("div.pr-top__headline:text-is('See you tomorrow!')", timeout=wait_ms)
+        frame.wait_for_selector(css, state="visible", timeout=wait_ms)
         return True
     except Exception:
         return False
@@ -343,6 +344,7 @@ def main():
     with sync_playwright() as p:
         browser = p.chromium.launch(executable_path=BRAVE_PATH, headless=False, args=["--disable-brave-update"])
         context = browser.new_context()
+        context.clear_cookies()
         context.add_cookies([cookie])
         context.add_init_script(
             "(() => { const keys = %s; keys.forEach(k => localStorage.setItem(k, 'true')); })();"
@@ -351,20 +353,20 @@ def main():
         page = context.new_page()
 
         for game_key in GAMES:
-            url = f"https://www.linkedin.com/games/{game_key}/results"
+            url = f"https://linkedin.com/games/{game_key}/?skipRedirect=true"
             try:
-                page.goto(url, wait_until="domcontentloaded", timeout=30000)
+                page.goto(url)
                 try:
                     page.wait_for_selector(f'iframe[src*="{game_key}"]', timeout=10000)
                 except Exception:
                     pass
 
-                if page.url.endswith("results/"):
-                    results[game_key] = "already completed"
-                    continue
-
                 frame = get_target_frame(page, game_key)
                 frame.wait_for_selector("[data-cell-idx]", timeout=15000)
+
+                if check_completion(frame):
+                    results[game_key] = "already completed"
+                    continue
 
                 ok, err = SOLVERS[game_key](frame)
                 if not ok:
